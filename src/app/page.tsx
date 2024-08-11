@@ -182,39 +182,69 @@ export default function Home() {
                 </div>
 
                 <div className="text-right">
-                  {deleting == banner.id ? (
-                    <Button
-                      disabled
-                      onClick={() => deleteBanner(banner.id)}
-                      className="ml-3"
-                      size={"sm"}
-                      variant={"destructive"}
-                    >
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                  
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={() => deleteBanner(banner.id)}
-                      className="ml-3"
-                      size={"sm"}
-                      variant={"destructive"}
-                    >
-                      <span>
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="15"
-                          height="15"
-                          viewBox="0 0 304 384"
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      {deleting == banner.id ? (
+                        <Button
+                          disabled
+                          onClick={() => deleteBanner(banner.id)}
+                          className="ml-3"
+                          size={"sm"}
+                          variant={"destructive"}
                         >
-                          <path
-                            fill="currentColor"
-                            d="M21 341V85h256v256q0 18-12.5 30.5T235 384H64q-18 0-30.5-12.5T21 341zM299 21v43H0V21h75L96 0h107l21 21h75z"
-                          />
-                        </svg>
-                      </span>
-                    </Button>
-                  )}
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        </Button>
+                      ) : (
+                        <Button
+                          // onClick={() => deleteBanner(banner.id)}
+                          className="ml-3"
+                          size={"sm"}
+                          variant={"destructive"}
+                        >
+                          <span>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="15"
+                              height="15"
+                              viewBox="0 0 304 384"
+                            >
+                              <path
+                                fill="currentColor"
+                                d="M21 341V85h256v256q0 18-12.5 30.5T235 384H64q-18 0-30.5-12.5T21 341zM299 21v43H0V21h75L96 0h107l21 21h75z"
+                              />
+                            </svg>
+                          </span>
+                        </Button>
+                      )}
+                    </AlertDialogTrigger>
+
+                    <AlertDialogContent className="bg-black">
+                      <form id="updateBanner" onSubmit={updateBanner}>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Sure You Want to delete this Note?</AlertDialogTitle>
+                          {/* <AlertDialogDescription className="text-slate-700">
+                            <div>
+                              <Input
+                                autoFocus
+                                className="text-black"
+                                onChange={(e) =>
+                                  updateEditInput(e.target.value)
+                                }
+                                name="edit_banner_image"
+                                value={editBanner.input}
+                              />
+                            </div>
+                          </AlertDialogDescription> */}
+                        </AlertDialogHeader>
+                        <AlertDialogFooter className="mt-2">
+                          <AlertDialogCancel className="bg-slate-600 hover:bg-slate-400">No</AlertDialogCancel>
+                          <AlertDialogAction className="bg-red-900 hover:bg-red-600 " onClick={() => deleteBanner(banner.id)}>
+                            Yes
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </form>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </div>
               <h2>{banner.image}</h2>
