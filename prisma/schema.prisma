@@ -1,0 +1,1464 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model banners {
+  id             BigInt       @id @default(autoincrement()) @db.UnsignedBigInt
+  title          String       @db.VarChar(255)
+  banner_type    String       @db.VarChar(255)
+  media_type     String       @db.VarChar(255)
+  image          String       @db.VarChar(255)
+  url            String?      @db.VarChar(255)
+  ebook_id       BigInt?      @db.UnsignedBigInt
+  book_id        BigInt?      @db.UnsignedBigInt
+  test_series_id BigInt?      @db.UnsignedBigInt
+  quiz_id        BigInt?      @db.UnsignedBigInt
+  status         String       @default("active") @db.VarChar(255)
+  created_at     DateTime?    @db.Timestamp(0)
+  updated_at     DateTime?    @db.Timestamp(0)
+  books          books?       @relation(fields: [book_id], references: [id], onUpdate: NoAction, map: "banners_book_id_foreign")
+  e_books        e_books?     @relation(fields: [ebook_id], references: [id], onUpdate: NoAction, map: "banners_ebook_id_foreign")
+  quiz_topics    quiz_topics? @relation(fields: [quiz_id], references: [id], onUpdate: NoAction, map: "banners_quiz_id_foreign")
+  test_series    test_series? @relation(fields: [test_series_id], references: [id], onUpdate: NoAction, map: "banners_test_series_id_foreign")
+
+  @@index([book_id], map: "banners_book_id_foreign")
+  @@index([ebook_id], map: "banners_ebook_id_foreign")
+  @@index([quiz_id], map: "banners_quiz_id_foreign")
+  @@index([test_series_id], map: "banners_test_series_id_foreign")
+}
+
+model book_bookmarks {
+  id             BigInt          @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id        BigInt?         @db.UnsignedBigInt
+  ebook_id       BigInt?         @db.UnsignedBigInt
+  title          String?         @db.Text
+  page_no        String          @db.VarChar(255)
+  created_at     DateTime?       @db.Timestamp(0)
+  updated_at     DateTime?       @db.Timestamp(0)
+  chapter_id     BigInt?         @db.UnsignedBigInt
+  ebook_chapters ebook_chapters? @relation(fields: [chapter_id], references: [id], onUpdate: NoAction, map: "book_bookmarks_chapter_id_foreign")
+  e_books        e_books?        @relation(fields: [ebook_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "book_bookmarks_ebook_id_foreign")
+  users          users?          @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "book_bookmarks_user_id_foreign")
+
+  @@index([chapter_id], map: "book_bookmarks_chapter_id_foreign")
+  @@index([ebook_id], map: "book_bookmarks_ebook_id_foreign")
+  @@index([user_id], map: "book_bookmarks_user_id_foreign")
+}
+
+model bookmarks {
+  id                     BigInt                @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id                BigInt?               @db.UnsignedBigInt
+  quiz_chapter_id        BigInt?               @db.UnsignedBigInt
+  test_series_chapter_id BigInt?               @db.UnsignedBigInt
+  created_at             DateTime?             @db.Timestamp(0)
+  updated_at             DateTime?             @db.Timestamp(0)
+  quiz_chapters          quiz_chapters?        @relation(fields: [quiz_chapter_id], references: [id], onUpdate: NoAction, map: "bookmarks_quiz_chapter_id_foreign")
+  test_series_chapters   test_series_chapters? @relation(fields: [test_series_chapter_id], references: [id], onUpdate: NoAction, map: "bookmarks_test_series_chapter_id_foreign")
+  users                  users?                @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "bookmarks_user_id_foreign")
+
+  @@index([quiz_chapter_id], map: "bookmarks_quiz_chapter_id_foreign")
+  @@index([test_series_chapter_id], map: "bookmarks_test_series_chapter_id_foreign")
+  @@index([user_id], map: "bookmarks_user_id_foreign")
+}
+
+model books {
+  id                         BigInt                       @id @default(autoincrement()) @db.UnsignedBigInt
+  category_id                BigInt?                      @db.UnsignedBigInt
+  sub_category_id            BigInt?                      @db.UnsignedBigInt
+  title                      String                       @db.VarChar(255)
+  description                String                       @db.Text
+  cover_image                String                       @db.Text
+  pages                      String                       @db.Text
+  price                      Decimal                      @db.Decimal(8, 2)
+  mrp                        Decimal                      @db.Decimal(8, 2)
+  discount_percentage        Int?
+  minimum_quantity           Int?
+  book_pdf                   String?                      @db.VarChar(255)
+  video_link                 String?                      @db.VarChar(255)
+  views_count                BigInt                       @default(0)
+  status                     String                       @default("active") @db.VarChar(255)
+  is_featured                books_is_featured            @default(no)
+  created_at                 DateTime?                    @db.Timestamp(0)
+  updated_at                 DateTime?                    @db.Timestamp(0)
+  external_link              String?                      @db.Text
+  banners                    banners[]
+  categories                 categories?                  @relation(fields: [category_id], references: [id], onUpdate: NoAction, map: "books_category_id_foreign")
+  sub_categories             sub_categories?              @relation(fields: [sub_category_id], references: [id], onUpdate: NoAction, map: "books_sub_category_id_foreign")
+  carts                      carts[]
+  discussion_group_questions discussion_group_questions[]
+  favourites                 favourites[]
+  notifications              notifications[]
+  order_details              order_details[]
+
+  @@index([category_id], map: "books_category_id_foreign")
+  @@index([sub_category_id], map: "books_sub_category_id_foreign")
+}
+
+model business_settings {
+  id         BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  key        String    @db.Text
+  value      String    @db.LongText
+  created_at DateTime? @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+}
+
+model cache {
+  key        String @id @db.VarChar(255)
+  value      String @db.MediumText
+  expiration Int
+}
+
+model cache_locks {
+  key        String @id @db.VarChar(255)
+  owner      String @db.VarChar(255)
+  expiration Int
+}
+
+model carts {
+  id         BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id    BigInt?   @db.UnsignedBigInt
+  book_id    BigInt?   @db.UnsignedBigInt
+  quantity   Int
+  created_at DateTime? @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+  books      books?    @relation(fields: [book_id], references: [id], onUpdate: NoAction, map: "carts_book_id_foreign")
+  users      users?    @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "carts_user_id_foreign")
+
+  @@index([book_id], map: "carts_book_id_foreign")
+  @@index([user_id], map: "carts_user_id_foreign")
+}
+
+model categories {
+  id                          BigInt                        @id @default(autoincrement()) @db.UnsignedBigInt
+  title                       String                        @db.VarChar(255)
+  image                       String?                       @db.VarChar(255)
+  status                      categories_status             @default(active)
+  created_at                  DateTime?                     @db.Timestamp(0)
+  updated_at                  DateTime?                     @db.Timestamp(0)
+  books                       books[]
+  discussion_group_categories discussion_group_categories[]
+  discussion_group_questions  discussion_group_questions[]
+  e_book_subcategories        e_book_subcategories[]
+  e_books                     e_books[]
+}
+
+model cities {
+  id                 BigInt               @id @default(autoincrement()) @db.UnsignedBigInt
+  name               String               @db.VarChar(255)
+  state_id           BigInt               @db.UnsignedBigInt
+  state_code         String               @db.VarChar(255)
+  country_id         BigInt               @db.UnsignedBigInt
+  country_code       String               @db.VarChar(255)
+  latitude           String?              @db.VarChar(255)
+  longitude          String?              @db.VarChar(255)
+  created_at         DateTime?            @db.Timestamp(0)
+  updated_at         DateTime?            @db.Timestamp(0)
+  flag               Boolean              @default(false)
+  wikiDataId         String?              @db.VarChar(255)
+  countries          countries            @relation(fields: [country_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "cities_country_id_foreign")
+  states             states               @relation(fields: [state_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "cities_state_id_foreign")
+  delivery_addresses delivery_addresses[]
+
+  @@index([country_id], map: "cities_country_id_foreign")
+  @@index([state_id], map: "cities_state_id_foreign")
+}
+
+model comments {
+  id               BigInt          @id @default(autoincrement()) @db.UnsignedBigInt
+  commentable_id   Int
+  commentable_type String          @db.VarChar(255)
+  comment          String          @db.Text
+  user_id          BigInt?         @db.UnsignedBigInt
+  status           comments_status @default(active)
+  created_at       DateTime?       @db.Timestamp(0)
+  updated_at       DateTime?       @db.Timestamp(0)
+
+  @@index([user_id], map: "comments_user_id_foreign")
+}
+
+model continue_readings {
+  id         BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id    BigInt?   @db.UnsignedBigInt
+  e_book_id  BigInt?   @db.UnsignedBigInt
+  page_no    BigInt
+  created_at DateTime? @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+  e_books    e_books?  @relation(fields: [e_book_id], references: [id], onUpdate: NoAction, map: "continue_readings_e_book_id_foreign")
+  users      users?    @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "continue_readings_user_id_foreign")
+
+  @@index([e_book_id], map: "continue_readings_e_book_id_foreign")
+  @@index([user_id], map: "continue_readings_user_id_foreign")
+}
+
+model countries {
+  id              BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  name            String    @db.VarChar(255)
+  iso3            String    @db.VarChar(255)
+  iso2            String    @db.VarChar(255)
+  phonecode       String    @db.VarChar(255)
+  capital         String    @db.VarChar(255)
+  currency        String    @db.VarChar(255)
+  currency_symbol String    @db.VarChar(255)
+  tld             String    @db.VarChar(255)
+  native          String?   @db.VarChar(255)
+  region          String    @db.VarChar(255)
+  subregion       String    @db.VarChar(255)
+  timezones       String    @db.Text
+  translations    String?   @db.Text
+  latitude        String    @db.Text
+  longitude       String    @db.Text
+  emoji           String    @db.Text
+  emojiU          String    @db.Text
+  flag            Boolean   @default(false)
+  wikiDataId      String?   @db.Text
+  created_at      DateTime? @db.Timestamp(0)
+  updated_at      DateTime? @db.Timestamp(0)
+  cities          cities[]
+}
+
+model delete_notifications {
+  id              BigInt         @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id         BigInt?        @db.UnsignedBigInt
+  notification_id BigInt?        @db.UnsignedBigInt
+  created_at      DateTime?      @db.Timestamp(0)
+  updated_at      DateTime?      @db.Timestamp(0)
+  notifications   notifications? @relation(fields: [notification_id], references: [id], onUpdate: NoAction, map: "delete_notifications_notification_id_foreign")
+  users           users?         @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "delete_notifications_user_id_foreign")
+
+  @@index([notification_id], map: "delete_notifications_notification_id_foreign")
+  @@index([user_id], map: "delete_notifications_user_id_foreign")
+}
+
+model delivery_addresses {
+  id             BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id        BigInt?   @db.UnsignedBigInt
+  state_id       BigInt?   @db.UnsignedBigInt
+  city_id        BigInt?   @db.UnsignedBigInt
+  contact_person String    @db.VarChar(255)
+  mobile         String    @db.VarChar(255)
+  type           String    @db.VarChar(255)
+  address        String    @db.Text
+  landmark       String    @db.VarChar(255)
+  pincode        String    @db.VarChar(255)
+  is_default     String    @default("no") @db.VarChar(255)
+  created_at     DateTime? @db.Timestamp(0)
+  updated_at     DateTime? @db.Timestamp(0)
+  cities         cities?   @relation(fields: [city_id], references: [id], onUpdate: NoAction, map: "delivery_addresses_city_id_foreign")
+  states         states?   @relation(fields: [state_id], references: [id], onUpdate: NoAction, map: "delivery_addresses_state_id_foreign")
+  users          users?    @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "delivery_addresses_user_id_foreign")
+
+  @@index([city_id], map: "delivery_addresses_city_id_foreign")
+  @@index([state_id], map: "delivery_addresses_state_id_foreign")
+  @@index([user_id], map: "delivery_addresses_user_id_foreign")
+}
+
+model discussion_group_bookmarks {
+  id                         BigInt                      @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id                    BigInt?                     @db.UnsignedBigInt
+  question_id                BigInt?                     @db.UnsignedBigInt
+  created_at                 DateTime?                   @db.Timestamp(0)
+  updated_at                 DateTime?                   @db.Timestamp(0)
+  discussion_group_id        BigInt?                     @db.UnsignedBigInt
+  discussion_groups          discussion_groups?          @relation(fields: [discussion_group_id], references: [id], onUpdate: NoAction, map: "discussion_group_bookmarks_discussion_group_id_foreign")
+  discussion_group_questions discussion_group_questions? @relation(fields: [question_id], references: [id], onUpdate: NoAction, map: "discussion_group_bookmarks_question_id_foreign")
+  users                      users?                      @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "discussion_group_bookmarks_user_id_foreign")
+
+  @@index([discussion_group_id], map: "discussion_group_bookmarks_discussion_group_id_foreign")
+  @@index([question_id], map: "discussion_group_bookmarks_question_id_foreign")
+  @@index([user_id], map: "discussion_group_bookmarks_user_id_foreign")
+}
+
+model discussion_group_categories {
+  id                  BigInt             @id @default(autoincrement()) @db.UnsignedBigInt
+  discussion_group_id BigInt?            @db.UnsignedBigInt
+  category_id         BigInt?            @db.UnsignedBigInt
+  created_at          DateTime?          @db.Timestamp(0)
+  updated_at          DateTime?          @db.Timestamp(0)
+  categories          categories?        @relation(fields: [category_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "discussion_group_categories_category_id_foreign")
+  discussion_groups   discussion_groups? @relation(fields: [discussion_group_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "discussion_group_categories_discussion_group_id_foreign")
+
+  @@index([category_id], map: "discussion_group_categories_category_id_foreign")
+  @@index([discussion_group_id], map: "discussion_group_categories_discussion_group_id_foreign")
+}
+
+model discussion_group_comments {
+  id                         BigInt                               @id @default(autoincrement()) @db.UnsignedBigInt
+  question_id                BigInt?                              @db.UnsignedBigInt
+  user_id                    BigInt?                              @db.UnsignedBigInt
+  comment                    String                               @db.LongText
+  image                      String?                              @db.VarChar(255)
+  video                      String?                              @db.VarChar(255)
+  created_at                 DateTime?                            @db.Timestamp(0)
+  updated_at                 DateTime?                            @db.Timestamp(0)
+  action_by                  discussion_group_comments_action_by?
+  discussion_group_questions discussion_group_questions?          @relation(fields: [question_id], references: [id], onUpdate: NoAction, map: "discussion_group_comments_question_id_foreign")
+  users                      users?                               @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "discussion_group_comments_user_id_foreign")
+
+  @@index([question_id], map: "discussion_group_comments_question_id_foreign")
+  @@index([user_id], map: "discussion_group_comments_user_id_foreign")
+}
+
+model discussion_group_likes {
+  id                         BigInt                      @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id                    BigInt?                     @db.UnsignedBigInt
+  question_id                BigInt?                     @db.UnsignedBigInt
+  created_at                 DateTime?                   @db.Timestamp(0)
+  updated_at                 DateTime?                   @db.Timestamp(0)
+  discussion_group_questions discussion_group_questions? @relation(fields: [question_id], references: [id], onUpdate: NoAction, map: "discussion_group_likes_question_id_foreign")
+  users                      users?                      @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "discussion_group_likes_user_id_foreign")
+
+  @@index([question_id], map: "discussion_group_likes_question_id_foreign")
+  @@index([user_id], map: "discussion_group_likes_user_id_foreign")
+}
+
+model discussion_group_questions {
+  id                         BigInt                       @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id                    BigInt?                      @db.UnsignedBigInt
+  discussion_group_id        BigInt?                      @db.UnsignedBigInt
+  category_id                BigInt?                      @db.UnsignedBigInt
+  book_id                    BigInt?                      @db.UnsignedBigInt
+  question                   String                       @db.Text
+  page_number                String                       @db.VarChar(255)
+  image                      String?                      @db.VarChar(255)
+  views                      BigInt?                      @default(0)
+  created_at                 DateTime?                    @db.Timestamp(0)
+  updated_at                 DateTime?                    @db.Timestamp(0)
+  discussion_group_bookmarks discussion_group_bookmarks[]
+  discussion_group_comments  discussion_group_comments[]
+  discussion_group_likes     discussion_group_likes[]
+  books                      books?                       @relation(fields: [book_id], references: [id], onUpdate: NoAction, map: "discussion_group_questions_book_id_foreign")
+  categories                 categories?                  @relation(fields: [category_id], references: [id], onUpdate: NoAction, map: "discussion_group_questions_category_id_foreign")
+  discussion_groups          discussion_groups?           @relation(fields: [discussion_group_id], references: [id], onUpdate: NoAction, map: "discussion_group_questions_discussion_group_id_foreign")
+  users                      users?                       @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "discussion_group_questions_user_id_foreign")
+
+  @@index([book_id], map: "discussion_group_questions_book_id_foreign")
+  @@index([category_id], map: "discussion_group_questions_category_id_foreign")
+  @@index([discussion_group_id], map: "discussion_group_questions_discussion_group_id_foreign")
+  @@index([user_id], map: "discussion_group_questions_user_id_foreign")
+}
+
+model discussion_groups {
+  id                          BigInt                        @id @default(autoincrement()) @db.UnsignedBigInt
+  name                        String                        @db.VarChar(255)
+  status                      String                        @default("active") @db.VarChar(255)
+  created_at                  DateTime?                     @db.Timestamp(0)
+  updated_at                  DateTime?                     @db.Timestamp(0)
+  discussion_group_bookmarks  discussion_group_bookmarks[]
+  discussion_group_categories discussion_group_categories[]
+  discussion_group_questions  discussion_group_questions[]
+}
+
+model e_book_subcategories {
+  id              BigInt          @id @default(autoincrement()) @db.UnsignedBigInt
+  e_book_id       BigInt?         @db.UnsignedBigInt
+  category_id     BigInt?         @db.UnsignedBigInt
+  sub_category_id BigInt?         @db.UnsignedBigInt
+  created_at      DateTime?       @db.Timestamp(0)
+  updated_at      DateTime?       @db.Timestamp(0)
+  categories      categories?     @relation(fields: [category_id], references: [id], onUpdate: NoAction, map: "e_book_subcategories_category_id_foreign")
+  e_books         e_books?        @relation(fields: [e_book_id], references: [id], onUpdate: NoAction, map: "e_book_subcategories_e_book_id_foreign")
+  sub_categories  sub_categories? @relation(fields: [sub_category_id], references: [id], onUpdate: NoAction, map: "e_book_subcategories_sub_category_id_foreign")
+
+  @@index([category_id], map: "e_book_subcategories_category_id_foreign")
+  @@index([e_book_id], map: "e_book_subcategories_e_book_id_foreign")
+  @@index([sub_category_id], map: "e_book_subcategories_sub_category_id_foreign")
+}
+
+model e_books {
+  id                      BigInt                    @id @default(autoincrement()) @db.UnsignedBigInt
+  category_id             BigInt?                   @db.UnsignedBigInt
+  title                   String                    @db.Text
+  description             String?                   @db.Text
+  no_of_pages             String?                   @db.VarChar(255)
+  views_count             BigInt?                   @default(0)
+  pdf_front               String                    @db.VarChar(255)
+  type                    e_books_type
+  epub_file               String                    @db.Text
+  is_featured             e_books_is_featured       @default(no)
+  status                  e_books_status            @default(active)
+  created_at              DateTime?                 @db.Timestamp(0)
+  updated_at              DateTime?                 @db.Timestamp(0)
+  password                String?                   @db.Text
+  banners                 banners[]
+  book_bookmarks          book_bookmarks[]
+  continue_readings       continue_readings[]
+  e_book_subcategories    e_book_subcategories[]
+  categories              categories?               @relation(fields: [category_id], references: [id], onUpdate: NoAction, map: "e_books_category_id_foreign")
+  ebook_chapters          ebook_chapters[]
+  favourites              favourites[]
+  notifications           notifications[]
+  single_book_memberships single_book_memberships[]
+
+  @@index([category_id], map: "e_books_category_id_foreign")
+}
+
+model ebook_chapters {
+  id             BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  e_book_id      BigInt?          @db.UnsignedBigInt
+  title          String?          @db.Text
+  pg_start       Int?
+  pg_end         Int?
+  status         String           @default("active") @db.VarChar(255)
+  created_at     DateTime?        @db.Timestamp(0)
+  updated_at     DateTime?        @db.Timestamp(0)
+  book_bookmarks book_bookmarks[]
+  e_books        e_books?         @relation(fields: [e_book_id], references: [id], onUpdate: NoAction, map: "ebook_chapters_e_book_id_foreign")
+
+  @@index([e_book_id], map: "ebook_chapters_e_book_id_foreign")
+}
+
+model events {
+  id         BigInt        @id @default(autoincrement()) @db.UnsignedBigInt
+  title      String        @db.VarChar(255)
+  link       String        @db.VarChar(255)
+  event_date DateTime      @db.Date
+  event_time DateTime?     @db.Time(0)
+  status     events_status @default(active)
+  created_at DateTime?     @db.Timestamp(0)
+  updated_at DateTime?     @db.Timestamp(0)
+}
+
+model exterior_books {
+  id          BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  title       String    @db.VarChar(255)
+  price       Int
+  image       String    @db.VarChar(255)
+  link        String    @db.VarChar(255)
+  pdf         String    @db.VarChar(255)
+  description String    @db.Text
+  status      String    @default("active") @db.VarChar(255)
+  created_at  DateTime? @db.Timestamp(0)
+  updated_at  DateTime? @db.Timestamp(0)
+}
+
+model failed_jobs {
+  id         BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid       String   @unique(map: "failed_jobs_uuid_unique") @db.VarChar(255)
+  connection String   @db.Text
+  queue      String   @db.Text
+  payload    String   @db.LongText
+  exception  String   @db.LongText
+  failed_at  DateTime @default(now()) @db.Timestamp(0)
+}
+
+model favourites {
+  id             BigInt       @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id        BigInt?      @db.UnsignedBigInt
+  e_book_id      BigInt?      @db.UnsignedBigInt
+  feed_id        BigInt?      @db.UnsignedBigInt
+  created_at     DateTime?    @db.Timestamp(0)
+  updated_at     DateTime?    @db.Timestamp(0)
+  quiz_id        BigInt?      @db.UnsignedBigInt
+  test_series_id BigInt?      @db.UnsignedBigInt
+  book_id        BigInt?      @db.UnsignedBigInt
+  books          books?       @relation(fields: [book_id], references: [id], onUpdate: NoAction, map: "favourites_book_id_foreign")
+  e_books        e_books?     @relation(fields: [e_book_id], references: [id], onUpdate: NoAction, map: "favourites_e_book_id_foreign")
+  feeds          feeds?       @relation(fields: [feed_id], references: [id], onUpdate: NoAction, map: "favourites_feed_id_foreign")
+  quiz_topics    quiz_topics? @relation(fields: [quiz_id], references: [id], onUpdate: NoAction, map: "favourites_quiz_id_foreign")
+  test_series    test_series? @relation(fields: [test_series_id], references: [id], onUpdate: NoAction, map: "favourites_test_series_id_foreign")
+  users          users?       @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "favourites_user_id_foreign")
+
+  @@index([book_id], map: "favourites_book_id_foreign")
+  @@index([e_book_id], map: "favourites_e_book_id_foreign")
+  @@index([feed_id], map: "favourites_feed_id_foreign")
+  @@index([quiz_id], map: "favourites_quiz_id_foreign")
+  @@index([test_series_id], map: "favourites_test_series_id_foreign")
+  @@index([user_id], map: "favourites_user_id_foreign")
+}
+
+model feeds {
+  id          BigInt       @id @default(autoincrement()) @db.UnsignedBigInt
+  type        String       @db.VarChar(255)
+  title       String       @db.VarChar(255)
+  description String       @db.LongText
+  media       String       @db.VarChar(255)
+  link        String?      @db.VarChar(255)
+  pdf         String?      @db.VarChar(255)
+  status      feeds_status @default(active)
+  created_at  DateTime?    @db.Timestamp(0)
+  updated_at  DateTime?    @db.Timestamp(0)
+  favourites  favourites[]
+}
+
+model invoices {
+  id               BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  order_id         BigInt?   @db.UnsignedBigInt
+  user_id          BigInt?   @db.UnsignedBigInt
+  invoice_no       String    @db.VarChar(255)
+  sub_total        Decimal   @db.Decimal(8, 2)
+  discount         Decimal?  @db.Decimal(8, 2)
+  delivery_charges Decimal   @db.Decimal(8, 2)
+  total            Decimal   @db.Decimal(8, 2)
+  invoice_pdf      String?   @db.VarChar(255)
+  created_at       DateTime? @db.Timestamp(0)
+  updated_at       DateTime? @db.Timestamp(0)
+  orders           orders?   @relation(fields: [order_id], references: [id], onUpdate: NoAction, map: "invoices_order_id_foreign")
+  users            users?    @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "invoices_user_id_foreign")
+
+  @@index([order_id], map: "invoices_order_id_foreign")
+  @@index([user_id], map: "invoices_user_id_foreign")
+}
+
+model job_batches {
+  id             String  @id @db.VarChar(255)
+  name           String  @db.VarChar(255)
+  total_jobs     Int
+  pending_jobs   Int
+  failed_jobs    Int
+  failed_job_ids String  @db.LongText
+  options        String? @db.MediumText
+  cancelled_at   Int?
+  created_at     Int
+  finished_at    Int?
+}
+
+model jobs {
+  id           BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  queue        String @db.VarChar(255)
+  payload      String @db.LongText
+  attempts     Int    @db.UnsignedTinyInt
+  reserved_at  Int?   @db.UnsignedInt
+  available_at Int    @db.UnsignedInt
+  created_at   Int    @db.UnsignedInt
+
+  @@index([queue], map: "jobs_queue_index")
+}
+
+model log_activities {
+  id         BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id    BigInt?   @db.UnsignedBigInt
+  action     String?   @db.VarChar(255)
+  message    String?   @db.VarChar(255)
+  type       String?   @db.VarChar(255)
+  created_at DateTime? @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+
+  @@index([user_id], map: "log_activities_user_id_foreign")
+}
+
+model membership_transactions {
+  id                        BigInt                     @id @default(autoincrement()) @db.UnsignedBigInt
+  razor_order_id            String                     @db.VarChar(255)
+  razor_payment_receipt     String                     @db.VarChar(255)
+  membership_id             BigInt?                    @db.UnsignedBigInt
+  membership_name           String                     @db.VarChar(255)
+  validity                  String                     @db.VarChar(255)
+  purchase_date             DateTime                   @db.Date
+  expire_date               DateTime                   @db.Date
+  amount                    String                     @db.VarChar(255)
+  razorpay_order_id         BigInt?                    @db.UnsignedBigInt
+  created_at                DateTime?                  @db.Timestamp(0)
+  updated_at                DateTime?                  @db.Timestamp(0)
+  wallet_used               Decimal?                   @default(0.00) @db.Decimal(8, 2)
+  remark                    String?                    @db.VarChar(255)
+  promocode                 String?                    @db.VarChar(255)
+  promocode_discount        Decimal?                   @default(0.00) @db.Decimal(8, 2)
+  user_id                   BigInt?                    @db.UnsignedBigInt
+  membership_type           String                     @default("membership") @db.VarChar(255)
+  single_book_membership_id BigInt?                    @db.UnsignedBigInt
+  razorpay_orders           razorpay_orders?           @relation(fields: [razorpay_order_id], references: [id], onUpdate: NoAction, map: "membership_transactions_razorpay_order_id_foreign")
+  single_book_memberships   single_book_memberships?   @relation(fields: [single_book_membership_id], references: [id], onUpdate: NoAction, map: "membership_transactions_single_book_membership_id_foreign")
+  users                     users?                     @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "membership_transactions_user_id_foreign")
+  one_plus_one_memberships  one_plus_one_memberships[]
+
+  @@index([membership_id], map: "membership_transactions_membership_id_foreign")
+  @@index([razorpay_order_id], map: "membership_transactions_razorpay_order_id_foreign")
+  @@index([single_book_membership_id], map: "membership_transactions_single_book_membership_id_foreign")
+  @@index([user_id], map: "membership_transactions_user_id_foreign")
+}
+
+model membership_update_logs {
+  id           BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id      BigInt?   @db.UnsignedBigInt
+  expired_date DateTime  @db.Date
+  updated_date DateTime  @db.Date
+  updated_by   String?   @db.VarChar(255)
+  created_at   DateTime? @db.Timestamp(0)
+  updated_at   DateTime? @db.Timestamp(0)
+  users        users?    @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "membership_update_logs_user_id_foreign")
+
+  @@index([user_id], map: "membership_update_logs_user_id_foreign")
+}
+
+model memberships {
+  id                       BigInt                     @id @default(autoincrement()) @db.UnsignedBigInt
+  name                     String                     @db.VarChar(255)
+  validity                 String                     @db.VarChar(255)
+  amount                   Int
+  status                   memberships_status         @default(active)
+  created_at               DateTime?                  @db.Timestamp(0)
+  updated_at               DateTime?                  @db.Timestamp(0)
+  one_plus_one             String                     @default("no") @db.VarChar(255)
+  one_plus_one_memberships one_plus_one_memberships[]
+}
+
+model migrations {
+  id        Int    @id @default(autoincrement()) @db.UnsignedInt
+  migration String @db.VarChar(255)
+  batch     Int
+}
+
+model model_has_permissions {
+  permission_id BigInt      @db.UnsignedBigInt
+  model_type    String      @db.VarChar(255)
+  model_id      BigInt      @db.UnsignedBigInt
+  permissions   permissions @relation(fields: [permission_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "model_has_permissions_permission_id_foreign")
+
+  @@id([permission_id, model_id, model_type])
+  @@index([model_id, model_type], map: "model_has_permissions_model_id_model_type_index")
+}
+
+model model_has_roles {
+  role_id    BigInt @db.UnsignedBigInt
+  model_type String @db.VarChar(255)
+  model_id   BigInt @db.UnsignedBigInt
+  roles      roles  @relation(fields: [role_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "model_has_roles_role_id_foreign")
+
+  @@id([role_id, model_id, model_type])
+  @@index([model_id, model_type], map: "model_has_roles_model_id_model_type_index")
+}
+
+model notifications {
+  id                   BigInt                 @id @default(autoincrement()) @db.UnsignedBigInt
+  type                 String?                @default("all") @db.VarChar(255)
+  title                String                 @db.VarChar(255)
+  description          String?                @db.Text
+  image                String?                @db.VarChar(255)
+  url                  String?                @db.VarChar(255)
+  ebook_id             BigInt?                @db.UnsignedBigInt
+  book_id              BigInt?                @db.UnsignedBigInt
+  quiz_id              BigInt?                @db.UnsignedBigInt
+  testseries_id        BigInt?                @db.UnsignedBigInt
+  video_id             BigInt?                @db.UnsignedBigInt
+  status               String                 @default("active") @db.VarChar(255)
+  created_at           DateTime?              @db.Timestamp(0)
+  updated_at           DateTime?              @db.Timestamp(0)
+  pdf                  String?                @db.VarChar(255)
+  delete_notifications delete_notifications[]
+  books                books?                 @relation(fields: [book_id], references: [id], onUpdate: NoAction, map: "notifications_book_id_foreign")
+  e_books              e_books?               @relation(fields: [ebook_id], references: [id], onUpdate: NoAction, map: "notifications_ebook_id_foreign")
+  quiz_topics          quiz_topics?           @relation(fields: [quiz_id], references: [id], onUpdate: NoAction, map: "notifications_quiz_id_foreign")
+  test_series          test_series?           @relation(fields: [testseries_id], references: [id], onUpdate: NoAction, map: "notifications_testseries_id_foreign")
+  video_topics         video_topics?          @relation(fields: [video_id], references: [id], onUpdate: NoAction, map: "notifications_video_id_foreign")
+
+  @@index([book_id], map: "notifications_book_id_foreign")
+  @@index([ebook_id], map: "notifications_ebook_id_foreign")
+  @@index([quiz_id], map: "notifications_quiz_id_foreign")
+  @@index([testseries_id], map: "notifications_testseries_id_foreign")
+  @@index([video_id], map: "notifications_video_id_foreign")
+}
+
+model one_plus_one_memberships {
+  id                                             BigInt                   @id @default(autoincrement()) @db.UnsignedBigInt
+  user_one                                       BigInt?                  @db.UnsignedBigInt
+  user_two                                       BigInt?                  @db.UnsignedBigInt
+  membership_id                                  BigInt?                  @db.UnsignedBigInt
+  membership_transaction_id                      BigInt?                  @db.UnsignedBigInt
+  validity                                       String                   @db.VarChar(255)
+  membership_expiry_date                         DateTime                 @db.Date
+  created_at                                     DateTime?                @db.Timestamp(0)
+  updated_at                                     DateTime?                @db.Timestamp(0)
+  memberships                                    memberships?             @relation(fields: [membership_id], references: [id], onUpdate: NoAction, map: "one_plus_one_memberships_membership_id_foreign")
+  membership_transactions                        membership_transactions? @relation(fields: [membership_transaction_id], references: [id], onUpdate: NoAction, map: "one_plus_one_memberships_membership_transaction_id_foreign")
+  users_one_plus_one_memberships_user_oneTousers users?                   @relation("one_plus_one_memberships_user_oneTousers", fields: [user_one], references: [id], onUpdate: NoAction, map: "one_plus_one_memberships_user_one_foreign")
+  users_one_plus_one_memberships_user_twoTousers users?                   @relation("one_plus_one_memberships_user_twoTousers", fields: [user_two], references: [id], onUpdate: NoAction, map: "one_plus_one_memberships_user_two_foreign")
+
+  @@index([membership_id], map: "one_plus_one_memberships_membership_id_foreign")
+  @@index([membership_transaction_id], map: "one_plus_one_memberships_membership_transaction_id_foreign")
+  @@index([user_one], map: "one_plus_one_memberships_user_one_foreign")
+  @@index([user_two], map: "one_plus_one_memberships_user_two_foreign")
+}
+
+model order_details {
+  id          BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id     BigInt?   @db.UnsignedBigInt
+  order_id    BigInt?   @db.UnsignedBigInt
+  book_id     BigInt?   @db.UnsignedBigInt
+  quantity    Int
+  book_detail Json
+  mrp         Decimal   @db.Decimal(8, 2)
+  price       Decimal   @db.Decimal(8, 2)
+  created_at  DateTime? @db.Timestamp(0)
+  updated_at  DateTime? @db.Timestamp(0)
+  books       books?    @relation(fields: [book_id], references: [id], onUpdate: NoAction, map: "order_details_book_id_foreign")
+  orders      orders?   @relation(fields: [order_id], references: [id], onUpdate: NoAction, map: "order_details_order_id_foreign")
+  users       users?    @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "order_details_user_id_foreign")
+
+  @@index([book_id], map: "order_details_book_id_foreign")
+  @@index([order_id], map: "order_details_order_id_foreign")
+  @@index([user_id], map: "order_details_user_id_foreign")
+}
+
+model order_transactions {
+  id                    BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  order_id              BigInt?          @db.UnsignedBigInt
+  user_id               BigInt?          @db.UnsignedBigInt
+  razorpay_order_id     BigInt?          @db.UnsignedBigInt
+  razor_payment_receipt String           @db.VarChar(255)
+  amount                Decimal          @db.Decimal(8, 2)
+  status                String           @db.VarChar(255)
+  remark                String?          @db.VarChar(255)
+  created_at            DateTime?        @db.Timestamp(0)
+  updated_at            DateTime?        @db.Timestamp(0)
+  orders                orders?          @relation(fields: [order_id], references: [id], onUpdate: NoAction, map: "order_transactions_order_id_foreign")
+  razorpay_orders       razorpay_orders? @relation(fields: [razorpay_order_id], references: [id], onUpdate: NoAction, map: "order_transactions_razorpay_order_id_foreign")
+  users                 users?           @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "order_transactions_user_id_foreign")
+
+  @@index([order_id], map: "order_transactions_order_id_foreign")
+  @@index([razorpay_order_id], map: "order_transactions_razorpay_order_id_foreign")
+  @@index([user_id], map: "order_transactions_user_id_foreign")
+}
+
+model orders {
+  id                   BigInt               @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id              BigInt?              @db.UnsignedBigInt
+  wallet_amount_used   Decimal              @db.Decimal(8, 2)
+  promocode            String?              @db.VarChar(255)
+  promocode_discount   Decimal?             @db.Decimal(8, 2)
+  delivery_address     Json
+  delivery_charges     Decimal              @db.Decimal(8, 2)
+  subtotal             Decimal              @db.Decimal(8, 2)
+  final_total          Decimal              @db.Decimal(8, 2)
+  tracking_url         String?              @db.Text
+  tracking_consignment String?              @db.VarChar(255)
+  order_uid            String               @db.VarChar(255)
+  status               orders_status        @default(accepted)
+  accepted             DateTime?            @db.Timestamp(0)
+  shipped              DateTime?            @db.Timestamp(0)
+  delivered            DateTime?            @db.Timestamp(0)
+  cancelled            DateTime?            @db.Timestamp(0)
+  created_at           DateTime?            @db.Timestamp(0)
+  updated_at           DateTime?            @db.Timestamp(0)
+  invoices             invoices[]
+  order_details        order_details[]
+  order_transactions   order_transactions[]
+  users                users?               @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "orders_user_id_foreign")
+
+  @@index([user_id], map: "orders_user_id_foreign")
+}
+
+model otps {
+  id         BigInt      @id @default(autoincrement()) @db.UnsignedBigInt
+  mobile     String      @db.VarChar(13)
+  otp        String      @db.VarChar(6)
+  expire_at  DateTime?   @db.DateTime(0)
+  status     otps_status @default(active)
+  created_at DateTime?   @db.Timestamp(0)
+  updated_at DateTime?   @db.Timestamp(0)
+}
+
+model password_reset_tokens {
+  email      String    @id @db.VarChar(255)
+  token      String    @db.VarChar(255)
+  created_at DateTime? @db.Timestamp(0)
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model password_resets {
+  email      String    @db.VarChar(255)
+  token      String    @db.VarChar(255)
+  created_at DateTime? @db.Timestamp(0)
+
+  @@index([email], map: "password_resets_email_index")
+  @@ignore
+}
+
+model permissions {
+  id                    BigInt                  @id @default(autoincrement()) @db.UnsignedBigInt
+  name                  String                  @db.VarChar(255)
+  guard_name            String                  @db.VarChar(255)
+  created_at            DateTime?               @db.Timestamp(0)
+  updated_at            DateTime?               @db.Timestamp(0)
+  model_has_permissions model_has_permissions[]
+  role_has_permissions  role_has_permissions[]
+
+  @@unique([name, guard_name], map: "permissions_name_guard_name_unique")
+}
+
+model personal_access_tokens {
+  id             BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  tokenable_type String    @db.VarChar(255)
+  tokenable_id   BigInt    @db.UnsignedBigInt
+  name           String    @db.VarChar(255)
+  token          String    @unique(map: "personal_access_tokens_token_unique") @db.VarChar(64)
+  abilities      String?   @db.Text
+  last_used_at   DateTime? @db.Timestamp(0)
+  created_at     DateTime? @db.Timestamp(0)
+  updated_at     DateTime? @db.Timestamp(0)
+
+  @@index([tokenable_type, tokenable_id], map: "personal_access_tokens_tokenable_type_tokenable_id_index")
+}
+
+model post_requirements {
+  id         BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id    BigInt?   @db.UnsignedBigInt
+  title      String    @db.VarChar(255)
+  message    String    @db.LongText
+  reply      String?   @db.LongText
+  created_at DateTime? @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+
+  @@index([user_id], map: "post_requirements_user_id_foreign")
+}
+
+model promocodes {
+  id                   BigInt                   @id @default(autoincrement()) @db.UnsignedBigInt
+  code                 String                   @db.VarChar(255)
+  discount             Int
+  discount_type        promocodes_discount_type @default(percentage)
+  start                DateTime                 @db.Date
+  end                  DateTime                 @db.Date
+  minimum_order_amount String                   @db.VarChar(255)
+  max_discount_amount  String                   @db.VarChar(255)
+  message              String?                  @db.VarChar(255)
+  status               String                   @default("active") @db.VarChar(255)
+  created_at           DateTime?                @db.Timestamp(0)
+  updated_at           DateTime?                @db.Timestamp(0)
+  type                 String                   @default("global") @db.VarChar(255)
+  user_id              BigInt?                  @db.UnsignedBigInt
+
+  @@index([user_id], map: "promocodes_user_id_foreign")
+}
+
+model qrcodes {
+  id          BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  book_id     BigInt?   @db.UnsignedBigInt
+  title       String?   @db.VarChar(255)
+  description String?   @db.Text
+  code        String    @db.VarChar(255)
+  amount      Int
+  qr          String    @db.VarChar(255)
+  status      String    @default("active") @db.VarChar(255)
+  created_at  DateTime? @db.Timestamp(0)
+  updated_at  DateTime? @db.Timestamp(0)
+
+  @@index([book_id], map: "qrcodes_book_id_foreign")
+}
+
+model queue_jobs {
+  id           BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  queue        String @db.VarChar(255)
+  payload      String @db.LongText
+  attempts     Int    @db.UnsignedTinyInt
+  reserved_at  Int?   @db.UnsignedInt
+  available_at Int    @db.UnsignedInt
+  created_at   Int    @db.UnsignedInt
+
+  @@index([queue], map: "queue_jobs_queue_index")
+}
+
+model quiz_answers {
+  id               BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id          BigInt?   @db.UnsignedBigInt
+  quiz_topic_id    BigInt?   @db.UnsignedBigInt
+  quiz_chapter_id  BigInt?   @db.UnsignedBigInt
+  quiz_question_id BigInt?   @db.UnsignedBigInt
+  correct_answer   BigInt?   @db.UnsignedBigInt
+  selected_answer  BigInt?   @db.UnsignedBigInt
+  marks            Int
+  created_at       DateTime? @db.Timestamp(0)
+  updated_at       DateTime? @db.Timestamp(0)
+  type             String    @default("global") @db.VarChar(255)
+
+  @@index([correct_answer], map: "quiz_answers_correct_answer_foreign")
+  @@index([quiz_chapter_id], map: "quiz_answers_quiz_chapter_id_foreign")
+  @@index([quiz_question_id], map: "quiz_answers_quiz_question_id_foreign")
+  @@index([quiz_topic_id], map: "quiz_answers_quiz_topic_id_foreign")
+  @@index([selected_answer], map: "quiz_answers_selected_answer_foreign")
+  @@index([user_id], map: "quiz_answers_user_id_foreign")
+}
+
+model quiz_chapters {
+  id            BigInt      @id @default(autoincrement()) @db.UnsignedBigInt
+  quiz_topic_id BigInt?     @db.UnsignedBigInt
+  title         String      @db.VarChar(255)
+  status        String      @db.VarChar(255)
+  created_at    DateTime?   @db.Timestamp(0)
+  updated_at    DateTime?   @db.Timestamp(0)
+  order_by      String?     @db.VarChar(255)
+  bookmarks     bookmarks[]
+
+  @@index([quiz_topic_id], map: "quiz_chapters_quiz_topic_id_foreign")
+}
+
+model quiz_options {
+  id                 BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  quiz_question_id   BigInt?   @db.UnsignedBigInt
+  type               String?   @db.VarChar(255)
+  option             String?   @db.VarChar(255)
+  option_media       String?   @db.VarChar(255)
+  is_correct         String    @db.VarChar(255)
+  answer_description String?   @db.LongText
+  status             String    @db.VarChar(255)
+  created_at         DateTime? @db.Timestamp(0)
+  updated_at         DateTime? @db.Timestamp(0)
+  answer_media       String?   @db.VarChar(255)
+
+  @@index([quiz_question_id], map: "quiz_options_quiz_question_id_foreign")
+}
+
+model quiz_questions {
+  id              BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  quiz_topic_id   BigInt?   @db.UnsignedBigInt
+  quiz_chapter_id BigInt?   @db.UnsignedBigInt
+  question        String    @db.LongText
+  media           String?   @db.VarChar(255)
+  status          String    @db.VarChar(255)
+  created_at      DateTime? @db.Timestamp(0)
+  updated_at      DateTime? @db.Timestamp(0)
+  appear_year     String?   @db.VarChar(255)
+
+  @@index([quiz_chapter_id], map: "quiz_questions_quiz_chapter_id_foreign")
+  @@index([quiz_topic_id], map: "quiz_questions_quiz_topic_id_foreign")
+}
+
+model quiz_topics {
+  id              BigInt          @id @default(autoincrement()) @db.UnsignedBigInt
+  category_id     BigInt?         @db.UnsignedBigInt
+  sub_category_id BigInt?         @db.UnsignedBigInt
+  title           String          @db.VarChar(255)
+  description     String?         @db.Text
+  status          String          @db.VarChar(255)
+  created_at      DateTime?       @db.Timestamp(0)
+  updated_at      DateTime?       @db.Timestamp(0)
+  type            String          @default("global") @db.VarChar(255)
+  is_daily        String          @default("no") @db.VarChar(255)
+  is_featured     String          @default("no") @db.VarChar(255)
+  banners         banners[]
+  favourites      favourites[]
+  notifications   notifications[]
+
+  @@index([category_id], map: "quiz_topics_category_id_foreign")
+  @@index([sub_category_id], map: "quiz_topics_sub_category_id_foreign")
+}
+
+model razorpay_orders {
+  id                      BigInt                    @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id                 BigInt?                   @db.UnsignedBigInt
+  type                    String                    @db.VarChar(255)
+  order_id                String                    @db.VarChar(255)
+  order_data              Json
+  status                  String                    @default("created") @db.VarChar(255)
+  created_at              DateTime?                 @db.Timestamp(0)
+  updated_at              DateTime?                 @db.Timestamp(0)
+  wallet_used             Decimal?                  @default(0.00) @db.Decimal(8, 2)
+  payment_gateway         String?                   @db.VarChar(255)
+  amount                  Float?                    @db.Float
+  membership_transactions membership_transactions[]
+  order_transactions      order_transactions[]
+
+  @@index([user_id], map: "razorpay_orders_user_id_foreign")
+}
+
+model redeemed_qrs {
+  id         BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id    BigInt?   @db.UnsignedBigInt
+  book_id    BigInt?   @db.UnsignedBigInt
+  qrcode_id  BigInt?   @db.UnsignedBigInt
+  code       String    @db.VarChar(255)
+  amount     Int
+  created_at DateTime? @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+
+  @@index([book_id], map: "redeemed_qrs_book_id_foreign")
+  @@index([qrcode_id], map: "redeemed_qrs_qrcode_id_foreign")
+  @@index([user_id], map: "redeemed_qrs_user_id_foreign")
+}
+
+model reminders {
+  id            BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id       BigInt?   @db.UnsignedBigInt
+  reminder      Int
+  next_reminder DateTime  @default(now()) @db.Timestamp(0)
+  created_at    DateTime? @db.Timestamp(0)
+  updated_at    DateTime? @db.Timestamp(0)
+
+  @@index([user_id], map: "reminders_user_id_foreign")
+}
+
+model reviews {
+  id         BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id    BigInt?   @db.UnsignedBigInt
+  ebook_id   BigInt?   @db.UnsignedBigInt
+  book_id    BigInt?   @db.UnsignedBigInt
+  message    String?   @db.LongText
+  rating     Float
+  status     String    @default("active") @db.VarChar(255)
+  created_at DateTime? @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+
+  @@index([book_id], map: "reviews_book_id_foreign")
+  @@index([ebook_id], map: "reviews_ebook_id_foreign")
+  @@index([user_id], map: "reviews_user_id_foreign")
+}
+
+model role_has_permissions {
+  permission_id BigInt      @db.UnsignedBigInt
+  role_id       BigInt      @db.UnsignedBigInt
+  permissions   permissions @relation(fields: [permission_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "role_has_permissions_permission_id_foreign")
+  roles         roles       @relation(fields: [role_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "role_has_permissions_role_id_foreign")
+
+  @@id([permission_id, role_id])
+  @@index([role_id], map: "role_has_permissions_role_id_foreign")
+}
+
+model roles {
+  id                   BigInt                 @id @default(autoincrement()) @db.UnsignedBigInt
+  name                 String                 @db.VarChar(255)
+  guard_name           String                 @default("web") @db.VarChar(255)
+  created_at           DateTime?              @db.Timestamp(0)
+  updated_at           DateTime?              @db.Timestamp(0)
+  model_has_roles      model_has_roles[]
+  role_has_permissions role_has_permissions[]
+  users                users[]
+
+  @@unique([name, guard_name], map: "roles_name_guard_name_unique")
+}
+
+model sessions {
+  id            String  @id @db.VarChar(255)
+  user_id       BigInt? @db.UnsignedBigInt
+  ip_address    String? @db.VarChar(45)
+  user_agent    String? @db.Text
+  payload       String  @db.LongText
+  last_activity Int
+
+  @@index([last_activity], map: "sessions_last_activity_index")
+  @@index([user_id], map: "sessions_user_id_index")
+}
+
+model single_book_memberships {
+  id                      BigInt                    @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id                 BigInt?                   @db.UnsignedBigInt
+  e_book_id               BigInt?                   @db.UnsignedBigInt
+  expiry_date             DateTime?                 @db.Date
+  status                  String                    @default("active") @db.VarChar(255)
+  created_at              DateTime?                 @db.Timestamp(0)
+  updated_at              DateTime?                 @db.Timestamp(0)
+  membership_transactions membership_transactions[]
+  e_books                 e_books?                  @relation(fields: [e_book_id], references: [id], onUpdate: NoAction, map: "single_book_memberships_e_book_id_foreign")
+  users                   users?                    @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "single_book_memberships_user_id_foreign")
+
+  @@index([e_book_id], map: "single_book_memberships_e_book_id_foreign")
+  @@index([user_id], map: "single_book_memberships_user_id_foreign")
+}
+
+model states {
+  id                 BigInt               @id @default(autoincrement()) @db.UnsignedBigInt
+  name               String               @db.VarChar(255)
+  country_id         BigInt               @db.UnsignedBigInt
+  country_code       String               @db.VarChar(255)
+  fips_code          String?              @db.VarChar(255)
+  iso2               String               @db.VarChar(255)
+  latitude           String?              @db.VarChar(255)
+  longitude          String?              @db.VarChar(255)
+  created_at         DateTime?            @db.Timestamp(0)
+  updated_at         DateTime?            @db.Timestamp(0)
+  flag               Boolean              @default(false)
+  wikiDataId         String?              @db.Text
+  cities             cities[]
+  delivery_addresses delivery_addresses[]
+
+  @@index([country_id], map: "states_country_id_foreign")
+}
+
+model sub_categories {
+  id                   BigInt                 @id @default(autoincrement()) @db.UnsignedBigInt
+  category_id          BigInt?                @db.UnsignedBigInt
+  title                String                 @db.VarChar(255)
+  image                String?                @db.VarChar(255)
+  status               sub_categories_status  @default(active)
+  created_at           DateTime?              @db.Timestamp(0)
+  updated_at           DateTime?              @db.Timestamp(0)
+  books                books[]
+  e_book_subcategories e_book_subcategories[]
+
+  @@index([category_id], map: "sub_categories_category_id_foreign")
+}
+
+model test_series {
+  id              BigInt          @id @default(autoincrement()) @db.UnsignedBigInt
+  category_id     BigInt?         @db.UnsignedBigInt
+  sub_category_id BigInt?         @db.UnsignedBigInt
+  title           String          @db.VarChar(255)
+  description     String?         @db.Text
+  status          String          @default("active") @db.VarChar(255)
+  created_at      DateTime?       @db.Timestamp(0)
+  updated_at      DateTime?       @db.Timestamp(0)
+  type            String          @default("global") @db.VarChar(255)
+  is_featured     String          @default("no") @db.VarChar(255)
+  banners         banners[]
+  favourites      favourites[]
+  notifications   notifications[]
+
+  @@index([category_id], map: "test_series_category_id_foreign")
+  @@index([sub_category_id], map: "test_series_sub_category_id_foreign")
+}
+
+model test_series_answers {
+  id                     BigInt                              @id @default(autoincrement()) @db.UnsignedBigInt
+  test_series_id         BigInt?                             @db.UnsignedBigInt
+  user_id                BigInt?                             @db.UnsignedBigInt
+  test_series_chapter_id BigInt?                             @db.UnsignedBigInt
+  answer_data            Json
+  marks                  Int?
+  total_correct_ans      String?                             @db.VarChar(255)
+  remaining_time         String?                             @db.VarChar(255)
+  test_completed         test_series_answers_test_completed?
+  created_at             DateTime?                           @db.Timestamp(0)
+  updated_at             DateTime?                           @db.Timestamp(0)
+  visited                String?                             @db.VarChar(255)
+  attempted              String?                             @db.VarChar(255)
+  not_visited            String?                             @db.VarChar(255)
+  solve_later            String?                             @db.VarChar(255)
+  type                   String                              @default("global") @db.VarChar(255)
+
+  @@index([test_series_chapter_id], map: "test_series_answers_test_series_chapter_id_foreign")
+  @@index([test_series_id], map: "test_series_answers_test_series_id_foreign")
+  @@index([user_id], map: "test_series_answers_user_id_foreign")
+}
+
+model test_series_chapters {
+  id             BigInt      @id @default(autoincrement()) @db.UnsignedBigInt
+  test_series_id BigInt?     @db.UnsignedBigInt
+  title          String      @db.VarChar(255)
+  time           Int
+  status         String      @default("active") @db.VarChar(255)
+  created_at     DateTime?   @db.Timestamp(0)
+  updated_at     DateTime?   @db.Timestamp(0)
+  order_by       String?     @db.VarChar(255)
+  bookmarks      bookmarks[]
+
+  @@index([test_series_id], map: "test_series_chapters_test_series_id_foreign")
+}
+
+model test_series_options {
+  id                      BigInt                 @id @default(autoincrement()) @db.UnsignedBigInt
+  test_series_question_id BigInt?                @db.UnsignedBigInt
+  type                    String?                @db.VarChar(255)
+  option                  String?                @db.Text
+  is_correct              String                 @db.VarChar(255)
+  answer_description      String?                @db.Text
+  status                  String                 @db.VarChar(255)
+  created_at              DateTime?              @db.Timestamp(0)
+  updated_at              DateTime?              @db.Timestamp(0)
+  answer_media            String?                @db.VarChar(255)
+  option_media            String?                @db.VarChar(255)
+  test_series_questions   test_series_questions? @relation(fields: [test_series_question_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "test_series_options_test_series_question_id_foreign")
+
+  @@index([test_series_question_id], map: "test_series_options_test_series_question_id_foreign")
+}
+
+model test_series_questions {
+  id                     BigInt                @id @default(autoincrement()) @db.UnsignedBigInt
+  test_series_id         BigInt?               @db.UnsignedBigInt
+  test_series_chapter_id BigInt?               @db.UnsignedBigInt
+  question               String                @db.Text
+  media                  String?               @db.VarChar(255)
+  status                 String                @default("active") @db.VarChar(255)
+  created_at             DateTime?             @db.Timestamp(0)
+  updated_at             DateTime?             @db.Timestamp(0)
+  section_id             BigInt?               @db.UnsignedBigInt
+  section_name           String?               @db.VarChar(255)
+  test_series_options    test_series_options[]
+
+  @@index([section_id], map: "test_series_questions_section_id_foreign")
+  @@index([test_series_chapter_id], map: "test_series_questions_test_series_chapter_id_foreign")
+  @@index([test_series_id], map: "test_series_questions_test_series_id_foreign")
+}
+
+model testseries_sections {
+  id                     BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  name                   String    @db.VarChar(255)
+  description            String?   @db.Text
+  status                 String    @default("active") @db.VarChar(255)
+  created_at             DateTime? @db.Timestamp(0)
+  updated_at             DateTime? @db.Timestamp(0)
+  test_series_id         BigInt?   @db.UnsignedBigInt
+  test_series_chapter_id BigInt?   @db.UnsignedBigInt
+
+  @@index([test_series_chapter_id], map: "testseries_sections_test_series_chapter_id_foreign")
+  @@index([test_series_id], map: "testseries_sections_test_series_id_foreign")
+}
+
+model users {
+  id                                                                BigInt                       @id @default(autoincrement()) @db.UnsignedBigInt
+  name                                                              String?                      @db.VarChar(255)
+  email                                                             String?                      @unique(map: "users_email_unique") @db.VarChar(255)
+  phone                                                             String?                      @unique(map: "users_phone_unique") @db.VarChar(10)
+  image                                                             String?                      @db.VarChar(2000)
+  address                                                           String?                      @db.VarChar(2000)
+  gender                                                            users_gender?
+  email_verified_at                                                 DateTime?                    @db.Timestamp(0)
+  password                                                          String?                      @db.VarChar(255)
+  device_id                                                         String?                      @db.VarChar(255)
+  firebase_uid                                                      String?                      @db.VarChar(255)
+  isAdmin                                                           users_isAdmin                @default(dbgenerated("0"))
+  status                                                            users_status                 @default(active)
+  deleted_at                                                        DateTime?                    @db.Timestamp(0)
+  remember_token                                                    String?                      @db.VarChar(100)
+  created_at                                                        DateTime?                    @db.Timestamp(0)
+  updated_at                                                        DateTime?                    @db.Timestamp(0)
+  date_of_birth                                                     DateTime?                    @db.Date
+  category_id                                                       BigInt?                      @db.UnsignedBigInt
+  leadership_score                                                  BigInt                       @default(0)
+  test_series_score                                                 BigInt?
+  membership_expiry_date                                            DateTime?                    @db.Date
+  wallet                                                            Decimal                      @default(0.00) @db.Decimal(8, 2)
+  referred_by                                                       BigInt?                      @db.UnsignedBigInt
+  my_referral_code                                                  String?                      @unique(map: "users_my_referral_code_unique") @db.VarChar(255)
+  book_open                                                         Int                          @default(0)
+  role_id                                                           BigInt?                      @db.UnsignedBigInt
+  video_membership_expiry                                           DateTime?                    @db.Date
+  book_bookmarks                                                    book_bookmarks[]
+  bookmarks                                                         bookmarks[]
+  carts                                                             carts[]
+  continue_readings                                                 continue_readings[]
+  delete_notifications                                              delete_notifications[]
+  delivery_addresses                                                delivery_addresses[]
+  discussion_group_bookmarks                                        discussion_group_bookmarks[]
+  discussion_group_comments                                         discussion_group_comments[]
+  discussion_group_likes                                            discussion_group_likes[]
+  discussion_group_questions                                        discussion_group_questions[]
+  favourites                                                        favourites[]
+  invoices                                                          invoices[]
+  membership_transactions                                           membership_transactions[]
+  membership_update_logs                                            membership_update_logs[]
+  one_plus_one_memberships_one_plus_one_memberships_user_oneTousers one_plus_one_memberships[]   @relation("one_plus_one_memberships_user_oneTousers")
+  one_plus_one_memberships_one_plus_one_memberships_user_twoTousers one_plus_one_memberships[]   @relation("one_plus_one_memberships_user_twoTousers")
+  order_details                                                     order_details[]
+  order_transactions                                                order_transactions[]
+  orders                                                            orders[]
+  single_book_memberships                                           single_book_memberships[]
+  roles                                                             roles?                       @relation(fields: [role_id], references: [id], onUpdate: NoAction, map: "users_role_id_foreign")
+
+  @@index([category_id], map: "users_category_id_foreign")
+  @@index([referred_by], map: "users_referred_by_foreign")
+  @@index([role_id], map: "users_role_id_foreign")
+}
+
+model video_chapters {
+  id                      BigInt                     @id @default(autoincrement()) @db.UnsignedBigInt
+  video_topic_id          BigInt?                    @db.UnsignedBigInt
+  ebook_id                BigInt?                    @db.UnsignedBigInt
+  quiz_id                 BigInt?                    @db.UnsignedBigInt
+  test_series_id          BigInt?                    @db.UnsignedBigInt
+  title                   String                     @db.VarChar(255)
+  url                     String?                    @db.VarChar(255)
+  thumbnail               String?                    @db.VarChar(255)
+  type                    String                     @default("pdf") @db.VarChar(255)
+  media                   String?                    @db.VarChar(255)
+  description             String?                    @db.LongText
+  is_featured             video_chapters_is_featured @default(no)
+  status                  String                     @default("active") @db.VarChar(255)
+  created_at              DateTime?                  @db.Timestamp(0)
+  updated_at              DateTime?                  @db.Timestamp(0)
+  quiz_chapter_id         BigInt?                    @db.UnsignedBigInt
+  test_series_chapter_id  BigInt?                    @db.UnsignedBigInt
+  video_section_id        BigInt?                    @db.UnsignedBigInt
+  section_name            String?                    @db.VarChar(255)
+  quiz_question_ids       String?                    @db.Text
+  testseries_question_ids String?                    @db.Text
+
+  @@index([ebook_id], map: "video_chapters_ebook_id_foreign")
+  @@index([quiz_chapter_id], map: "video_chapters_quiz_chapter_id_foreign")
+  @@index([quiz_id], map: "video_chapters_quiz_id_foreign")
+  @@index([test_series_chapter_id], map: "video_chapters_test_series_chapter_id_foreign")
+  @@index([test_series_id], map: "video_chapters_test_series_id_foreign")
+  @@index([video_section_id], map: "video_chapters_video_section_id_foreign")
+  @@index([video_topic_id], map: "video_chapters_video_topic_id_foreign")
+}
+
+model video_sections {
+  id             BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  video_topic_id BigInt?   @db.UnsignedBigInt
+  name           String    @db.VarChar(255)
+  description    String?   @db.Text
+  status         String    @default("active") @db.VarChar(255)
+  created_at     DateTime? @db.Timestamp(0)
+  updated_at     DateTime? @db.Timestamp(0)
+
+  @@index([video_topic_id], map: "video_sections_video_topic_id_foreign")
+}
+
+model video_topics {
+  id              BigInt                   @id @default(autoincrement()) @db.UnsignedBigInt
+  title           String                   @db.VarChar(255)
+  banner          String                   @db.VarChar(255)
+  description     String                   @db.Text
+  is_featured     video_topics_is_featured @default(no)
+  status          String                   @default("active") @db.VarChar(255)
+  created_at      DateTime?                @db.Timestamp(0)
+  updated_at      DateTime?                @db.Timestamp(0)
+  ebook_id        BigInt?                  @db.UnsignedBigInt
+  quiz_id         BigInt?                  @db.UnsignedBigInt
+  test_series_id  BigInt?                  @db.UnsignedBigInt
+  pdf             String?                  @db.VarChar(255)
+  category_id     BigInt?                  @db.UnsignedBigInt
+  sub_category_id BigInt?                  @db.UnsignedBigInt
+  notifications   notifications[]
+
+  @@index([category_id], map: "video_topics_category_id_foreign")
+  @@index([ebook_id], map: "video_topics_ebook_id_foreign")
+  @@index([quiz_id], map: "video_topics_quiz_id_foreign")
+  @@index([sub_category_id], map: "video_topics_sub_category_id_foreign")
+  @@index([test_series_id], map: "video_topics_test_series_id_foreign")
+}
+
+model video_urls {
+  id               BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  video_chapter_id BigInt?   @db.UnsignedBigInt
+  title            String?   @db.VarChar(255)
+  url              String    @db.Text
+  description      String?   @db.Text
+  status           String    @default("active") @db.VarChar(255)
+  created_at       DateTime? @db.Timestamp(0)
+  updated_at       DateTime? @db.Timestamp(0)
+
+  @@index([video_chapter_id], map: "video_urls_video_chapter_id_foreign")
+}
+
+model wallet_transactions {
+  id         BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id    BigInt?   @db.UnsignedBigInt
+  type       String    @db.VarChar(255)
+  amount     Decimal   @db.Decimal(8, 2)
+  order_id   BigInt?   @db.UnsignedBigInt
+  remark     String?   @db.VarChar(255)
+  created_at DateTime? @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+
+  @@index([order_id], map: "wallet_transactions_order_id_foreign")
+  @@index([user_id], map: "wallet_transactions_user_id_foreign")
+}
+
+model wishlists {
+  id         BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id    BigInt?   @db.UnsignedBigInt
+  book_id    BigInt?   @db.UnsignedBigInt
+  created_at DateTime? @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+
+  @@index([book_id], map: "wishlists_book_id_foreign")
+  @@index([user_id], map: "wishlists_user_id_foreign")
+}
+
+model withdrawal_requests {
+  id         BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id    BigInt?   @db.UnsignedBigInt
+  amount     Int
+  remark     String?   @db.VarChar(255)
+  status     String    @default("pending") @db.VarChar(255)
+  created_at DateTime? @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+
+  @@index([user_id], map: "withdrawal_requests_user_id_foreign")
+}
+
+enum categories_status {
+  active
+  blocked
+}
+
+enum promocodes_discount_type {
+  percentage
+  flat
+}
+
+enum memberships_status {
+  active
+  blocked
+}
+
+enum otps_status {
+  active
+  expired
+}
+
+enum sub_categories_status {
+  active
+  blocked
+}
+
+enum video_topics_is_featured {
+  yes
+  no
+}
+
+enum comments_status {
+  active
+  blocked
+}
+
+enum events_status {
+  active
+  blocked
+}
+
+enum users_gender {
+  male
+  female
+  other
+}
+
+enum e_books_type {
+  epub
+  pdf
+}
+
+enum feeds_status {
+  active
+  blocked
+}
+
+enum discussion_group_comments_action_by {
+  users
+  admin
+}
+
+enum test_series_answers_test_completed {
+  yes
+  no
+}
+
+enum e_books_is_featured {
+  yes
+  no
+}
+
+enum e_books_status {
+  active
+  blocked
+}
+
+enum users_isAdmin {
+  false
+  true
+}
+
+enum video_chapters_is_featured {
+  yes
+  no
+}
+
+enum orders_status {
+  accepted
+  shipped
+  delivered
+  cancelled
+}
+
+enum users_status {
+  active
+  blocked
+}
+
+enum books_is_featured {
+  yes
+  no
+}

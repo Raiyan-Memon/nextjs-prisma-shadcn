@@ -1,113 +1,259 @@
-import Image from "next/image";
+"use client";
+import {
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { AlertDialog } from "@radix-ui/react-alert-dialog";
+import { Loader2 } from "lucide-react";
+import { FormEvent, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 export default function Home() {
+  const [banners, setBanners] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [storeBannerLoading, setStoreBannerLoading] = useState(false);
+  const [deleting, setDeleting] = useState(0);
+  const [bannerId, setBannerId] = useState(0);
+  const [editBanner, setEditBanner] = useState({
+    bannerId: bannerId,
+    input: "",
+  });
+
+  async function getBanners() {
+    const myData = await fetch("api/banner");
+    const data = await myData.json();
+    setBanners(data.data);
+    setIsLoading(false);
+  }
+
+  async function addBanner(event: FormEvent<HTMLFormElement>) {
+    setStoreBannerLoading(true);
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const add = await fetch("api/banner", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (add.ok) {
+      getBanners();
+      setStoreBannerLoading(false);
+      toast.success("Add Banner");
+      document.getElementById("SubmitForm").reset();
+    }
+  }
+  async function deleteBanner(id: number) {
+    setDeleting(id);
+    const deleteBanner = await fetch("api/banner/" + id, {
+      method: "DELETE",
+    });
+    if (deleteBanner.ok) {
+      getBanners();
+      setDeleting(0);
+      toast.success("Banner Deleted");
+    }
+  }
+
+  function updateEditInput(input: string) {
+    setEditBanner({
+      bannerId: bannerId,
+      input: input,
+    });
+  }
+
+  function updateBannerId(id: number, value: string) {
+    setBannerId(id);
+    setEditBanner({
+      bannerId: id,
+      input: value,
+    });
+  }
+
+  async function updateBanner(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const update = await fetch("api/banner/" + editBanner.bannerId, {
+      method: "PATCH",
+      body: JSON.stringify({
+        image: editBanner.input,
+      }),
+    });
+    if (update.ok) {
+      toast.success("Image Updated");
+      getBanners();
+    } else {
+      toast.error("Something Went Wrong");
+    }
+  }
+
+  useEffect(() => {
+    getBanners();
+  }, []);
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <div className="container my-5">
+      <div className="my-5">
+        <form id="SubmitForm" onSubmit={addBanner}>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Input name="image" className="text-black" placeholder="image" />
+            </div>
+
+            <div>
+              {storeBannerLoading ? (
+                <Button disabled>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving
+                </Button>
+              ) : (
+                <Button type="submit">Save</Button>
+              )}
+            </div>
+          </div>
+        </form>
+      </div>
+
+      {!isLoading ? (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {banners.map((banner) => (
+            <div key={banner.id} className="p-4 bg-slate-700 text-center">
+              <div className="grid grid-cols-2 p-3">
+                <div>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        size={"sm"}
+                        onClick={() => updateBannerId(banner.id, banner.image)}
+                        variant="secondary"
+                      >
+                        <span>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              fill="currentColor"
+                              d="M15.748 2.947a2 2 0 0 1 2.828 0l2.475 2.475a2 2 0 0 1 0 2.829L9.158 20.144l-6.38 1.076l1.077-6.38L15.748 2.947Zm-.229 3.057l2.475 2.475l1.643-1.643l-2.475-2.474l-1.643 1.642Zm1.06 3.89l-2.474-2.475l-8.384 8.384l-.503 2.977l2.977-.502l8.385-8.385Z"
+                            />
+                          </svg>
+                        </span>
+                      </Button>
+                    </AlertDialogTrigger>
+
+                    <AlertDialogContent className="bg-black">
+                      <form id="updateBanner" onSubmit={updateBanner}>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            Are you absolutely sure?
+                          </AlertDialogTitle>
+                          <AlertDialogDescription className="text-slate-700">
+                            <div>
+                              <Input
+                                autoFocus
+                                className="text-black"
+                                onChange={(e) =>
+                                  updateEditInput(e.target.value)
+                                }
+                                name="edit_banner_image"
+                                value={editBanner.input}
+                              />
+                            </div>
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter className="mt-2">
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction type="submit">
+                            Continue
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </form>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+
+                <div className="text-right">
+                  {deleting == banner.id ? (
+                    <Button
+                      disabled
+                      onClick={() => deleteBanner(banner.id)}
+                      className="ml-3"
+                      size={"sm"}
+                      variant={"destructive"}
+                    >
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                  
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => deleteBanner(banner.id)}
+                      className="ml-3"
+                      size={"sm"}
+                      variant={"destructive"}
+                    >
+                      <span>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="15"
+                          height="15"
+                          viewBox="0 0 304 384"
+                        >
+                          <path
+                            fill="currentColor"
+                            d="M21 341V85h256v256q0 18-12.5 30.5T235 384H64q-18 0-30.5-12.5T21 341zM299 21v43H0V21h75L96 0h107l21 21h75z"
+                          />
+                        </svg>
+                      </span>
+                    </Button>
+                  )}
+                </div>
+              </div>
+              <h2>{banner.image}</h2>
+            </div>
+          ))}
         </div>
-      </div>
-
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <Skeleton className="p-14" />
+          <Skeleton className="p-14" />
+          <Skeleton className="p-14" />
+          <Skeleton className="p-14" />
+          <Skeleton className="p-14" />
+          <Skeleton className="p-14" />
+          <Skeleton className="p-14" />
+          <Skeleton className="p-14" />
+          <Skeleton className="p-14" />
+          <Skeleton className="p-14" />
+          <Skeleton className="p-14" />
+          <Skeleton className="p-14" />
+          <Skeleton className="p-14" />
+          <Skeleton className="p-14" />
+          <Skeleton className="p-14" />
+          <Skeleton className="p-14" />
+          <Skeleton className="p-14" />
+          <Skeleton className="p-14" />
+          <Skeleton className="p-14" />
+          <Skeleton className="p-14" />
+          <Skeleton className="p-14" />
+          <Skeleton className="p-14" />
+          <Skeleton className="p-14" />
+          <Skeleton className="p-14" />
+          <Skeleton className="p-14" />
+          <Skeleton className="p-14" />
+          <Skeleton className="p-14" />
+          <Skeleton className="p-14" />
+          <Skeleton className="p-14" />
+        </div>
+      )}
+    </div>
   );
 }
