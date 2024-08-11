@@ -221,24 +221,18 @@ export default function Home() {
                     <AlertDialogContent className="bg-black">
                       <form id="updateBanner" onSubmit={updateBanner}>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>Sure You Want to delete this Note?</AlertDialogTitle>
-                          {/* <AlertDialogDescription className="text-slate-700">
-                            <div>
-                              <Input
-                                autoFocus
-                                className="text-black"
-                                onChange={(e) =>
-                                  updateEditInput(e.target.value)
-                                }
-                                name="edit_banner_image"
-                                value={editBanner.input}
-                              />
-                            </div>
-                          </AlertDialogDescription> */}
+                          <AlertDialogTitle>
+                            Sure You Want to delete this Note?
+                          </AlertDialogTitle>
                         </AlertDialogHeader>
                         <AlertDialogFooter className="mt-2">
-                          <AlertDialogCancel className="bg-slate-600 hover:bg-slate-400">No</AlertDialogCancel>
-                          <AlertDialogAction className="bg-red-900 hover:bg-red-600 " onClick={() => deleteBanner(banner.id)}>
+                          <AlertDialogCancel className="bg-slate-600 hover:bg-slate-400">
+                            No
+                          </AlertDialogCancel>
+                          <AlertDialogAction
+                            className="bg-red-900 hover:bg-red-600 "
+                            onClick={() => deleteBanner(banner.id)}
+                          >
                             Yes
                           </AlertDialogAction>
                         </AlertDialogFooter>
