@@ -1,14 +1,14 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "About | Note App",
-  description: "Test Note",
-};
+    title: "Projects | Note App",
+    description: "Test Note",
+  };
 
-export default function About() {
+export default function Project() {
   return (
     <div className="container">
-      <h2>About</h2>
+      <h3>Projects</h3>
     </div>
   );
 }
