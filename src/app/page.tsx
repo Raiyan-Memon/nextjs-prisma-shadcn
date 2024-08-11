@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertDialog } from "@radix-ui/react-alert-dialog";
 import { Loader2 } from "lucide-react";
+import { Metadata } from "next";
 import { FormEvent, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -110,8 +111,7 @@ export default function Home() {
             <div>
               {storeBannerLoading ? (
                 <Button disabled>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving
+                  <Loader2 className="h-4 w-4 animate-spin" />
                 </Button>
               ) : (
                 <Button type="submit">Save</Button>
@@ -225,16 +225,20 @@ export default function Home() {
                             Sure You Want to delete this Note?
                           </AlertDialogTitle>
                         </AlertDialogHeader>
-                        <AlertDialogFooter className="mt-2">
-                          <AlertDialogCancel className="bg-slate-600 hover:bg-slate-400">
-                            No
-                          </AlertDialogCancel>
-                          <AlertDialogAction
-                            className="bg-red-900 hover:bg-red-600 "
-                            onClick={() => deleteBanner(banner.id)}
-                          >
-                            Yes
-                          </AlertDialogAction>
+                        <AlertDialogFooter className="mt-2 sm:justify-start">
+                          <div className="grid grid-cols-1">
+                            <div>
+                              <AlertDialogAction
+                                className="bg-red-900 mr-3 hover:bg-red-600 "
+                                onClick={() => deleteBanner(banner.id)}
+                              >
+                                Yes
+                              </AlertDialogAction>
+                              <AlertDialogCancel className="bg-slate-600 hover:bg-slate-400">
+                                No
+                              </AlertDialogCancel>
+                            </div>
+                          </div>
                         </AlertDialogFooter>
                       </form>
                     </AlertDialogContent>

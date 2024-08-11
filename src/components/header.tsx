@@ -85,19 +85,26 @@ export default function Header() {
 
         <div className="sm:hidden" id="mobile-menu">
           <div className="space-y-1 px-2 pb-3 pt-2">
-            <a
-              href="#"
-              className="block rounded-md bg-gray-900 px-3 py-2 text-base font-medium text-white"
-              aria-current="page"
+            <Link
+              href="/"
+              className={
+                currentRoute == "/"
+                  ? "bg-gray-900 text-white px-3 py-2 text-sm font-medium rounded-md"
+                  : "text-gray-300 rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-700 hover:text-white"
+              }
             >
-              Dashboard
-            </a>
-            <a
-              href="#"
-              className="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+              Home
+            </Link>
+            <Link
+              href="/about"
+              className={
+                currentRoute == "/about"
+                  ? "bg-gray-900 text-white px-3 py-2 text-sm font-medium rounded-md"
+                  : "text-gray-300 rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-700 hover:text-white"
+              }
             >
-              Team
-            </a>
+              About
+            </Link>
             <a
               href="#"
               className="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
